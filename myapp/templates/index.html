@@ -363,17 +363,26 @@
 
     <div class="main-content">
 
+
+
+
+
+
+
         <!-- ADD FOOD -->
         <div class="glass-card">
             <form method="POST">
                 {% csrf_token %}
                 <div class="food-selector">
                     <label>🍽️ Add Food</label>
-                    <select class="food-select" name="food_consumed" id="food_consumed">
-                        {% for food in foods %}
-                        <option value="{{ food.name }}">{{ food.name }}</option>
-                        {% endfor %}
-                    </select>
+<input class="food-select" list="food_consumed" name="food_consumed" 
+       placeholder="Type to search food...">
+<datalist id="food_consumed">
+    {% for food in foods %}
+    <option value="{{ food.name }}">
+    {% endfor %}
+</datalist>
+
                     <button class="btn-teal" type="submit">+ Add</button>
                 </div>
             </form>
