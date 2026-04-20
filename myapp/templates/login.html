@@ -1,0 +1,226 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Calorie Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --teal:         #00c9b1;
+            --teal-glow:    rgba(0, 201, 177, 0.35);
+            --ocean-deep:   #0a1628;
+            --ocean-mid:    #0d2b4e;
+            --glass-bg:     rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --text-primary: #e8f4fd;
+            --text-muted:   rgba(232, 244, 253, 0.55);
+            --danger:       #ff6b8a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ocean-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0,120,180,0.3) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 80%, rgba(0,201,177,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 100% 100% at 50% 50%, var(--ocean-mid) 0%, var(--ocean-deep) 100%);
+            z-index: -1;
+        }
+
+        /* floating blobs */
+        .blob {
+            position: fixed;
+            border-radius: 50%;
+            z-index: -1;
+            animation: float 10s ease-in-out infinite;
+        }
+        .blob-1 {
+            width: 500px; height: 500px;
+            background: radial-gradient(circle, rgba(0,201,177,0.1) 0%, transparent 70%);
+            top: -150px; right: -150px;
+            animation-delay: 0s;
+        }
+        .blob-2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, rgba(0,120,180,0.12) 0%, transparent 70%);
+            bottom: -100px; left: -100px;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: scale(1) translate(0, 0); }
+            50% { transform: scale(1.1) translate(20px, -20px); }
+        }
+
+        /* CARD */
+        .card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            padding: 48px 40px;
+            width: 100%;
+            max-width: 400px;
+            animation: fadeUp 0.6s ease both;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .brand {
+            font-family: 'Space Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 3px;
+            color: var(--teal);
+            text-transform: uppercase;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 32px;
+            color: var(--text-primary);
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+
+        .form-group input {
+            width: 100%;
+            background: rgba(10, 22, 40, 0.6);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            padding: 13px 18px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .form-group input:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(0,201,177,0.15);
+        }
+
+        .form-group input::placeholder { color: rgba(232,244,253,0.3); }
+
+        .btn-submit {
+            width: 100%;
+            background: linear-gradient(135deg, #00c9b1, #0078b4);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            padding: 14px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            box-shadow: 0 4px 24px rgba(0,201,177,0.3);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(0,201,177,0.5);
+        }
+
+        .footer-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        .footer-link a {
+            color: var(--teal);
+            text-decoration: none;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+
+        .footer-link a:hover { opacity: 0.8; }
+
+        /* error messages */
+        .messages { list-style: none; padding: 0; margin-bottom: 20px; }
+        .messages li {
+            background: rgba(255,107,138,0.15);
+            border: 1px solid rgba(255,107,138,0.3);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 14px;
+            color: var(--danger);
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+
+    <div class="card">
+        <div class="brand">🌊 Calorie Tracker</div>
+        <div class="card-title">Welcome Back</div>
+
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" placeholder="Enter your username" required>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" name="password" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn-submit">Login →</button>
+        </form>
+
+        <div class="footer-link">
+            Don't have an account? <a href="/register/">Create one</a>
+        </div>
+    </div>
+</body>
+</html>

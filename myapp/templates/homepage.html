@@ -1,0 +1,127 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Tracker</title>
+
+<style>
+
+body{
+    margin: 0;
+}
+
+.bgimg{
+    background-image: url("{% static 'images/reg_bg1.jpg' %}");
+    height: 100vh;
+    background-size:cover;
+    background-position:center;
+    animation: zoomBg 20s ease-in-out infinite alternate;
+
+}
+
+@keyframes zoomBg{
+    0%{
+        background-size:100%;
+    }
+
+    100%{
+        background-size:110%;
+    }
+}
+
+
+@keyframes website{
+	0%{
+	transform:scale(1.5);
+	opacity:0.1;
+}
+
+	50%{
+	transform:scale(2);
+	opacity:1;
+
+}
+	70%{
+	transform:scale(2);
+	opacity:1;
+}
+
+	100%{
+	transform:scale(1.5);
+	opacity:0.1;
+
+}
+
+
+
+}
+
+.box{
+	border:2px rgb(165, 243, 237);
+	display:flex;
+    position: relative;
+    top: 250px;
+    border-radius: 40px;
+	width:280px;
+	margin-left:480px;
+	text-align:center;
+	justify-content:center;
+	align-items:center;
+	padding:10px;
+	color:rgb(29, 101, 107);
+	font-size:27px;
+	animation-name:website;
+	animation-duration:4s;
+	animation-delay:1s;
+	opacity:0;
+    box-shadow: 20px;
+
+
+}
+
+a{
+    text-decoration: none;
+    color:rgb(49, 173, 173);
+}
+
+.browse{
+    width: 260px;
+    height: 45px;
+    border: 2px solid rgb(77, 152, 157);
+    background-color: rgb(40, 140, 145);
+    border-radius: 30px;
+    display: flex;
+    position: relative;
+    margin:20px auto;
+    top: 350px;
+    right: 30px;
+    text-align:center;
+	justify-content:center;
+	align-items:center;
+    cursor: pointer;
+    color: aliceblue;
+
+}
+
+
+
+</style>
+
+
+</head>
+<body>
+    
+<div class="bgimg">
+<div class="box">Track Smart. Stay Fit.</div>
+<a href="{% url 'register' %}">
+<h1 class="browse"><i>Track Now! > </i></h1>
+</a>
+
+</div>
+
+
+</body>
+</html>

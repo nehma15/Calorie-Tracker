@@ -1,0 +1,542 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracker</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --ocean-deep:   #0a1628;
+            --ocean-mid:    #0d2b4e;
+            --teal:         #00c9b1;
+            --teal-glow:    rgba(0, 201, 177, 0.35);
+            --glass-bg:     rgba(255, 255, 255, 0.07);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --glass-hover:  rgba(255, 255, 255, 0.12);
+            --text-primary: #e8f4fd;
+            --text-muted:   rgba(232, 244, 253, 0.55);
+            --danger:       #ff6b8a;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--ocean-deep);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 10%, rgba(0, 120, 180, 0.3) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 80% at 80% 80%, rgba(0, 201, 177, 0.15) 0%, transparent 60%),
+                radial-gradient(ellipse 100% 100% at 50% 50%, var(--ocean-mid) 0%, var(--ocean-deep) 100%);
+            z-index: -1;
+        }
+
+        body::after {
+            content: '';
+            position: fixed;
+            width: 600px; height: 600px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,201,177,0.08) 0%, transparent 70%);
+            top: -200px; right: -200px;
+            z-index: -1;
+            animation: pulse 8s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.2); opacity: 1; }
+        }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background: rgba(10, 22, 40, 0.85);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-brand-text {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--teal);
+            letter-spacing: 2px;
+        }
+
+        .nav-links { display: flex; gap: 12px; }
+
+        .btn-glass {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--text-primary);
+            border-radius: 10px;
+            padding: 8px 20px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+        }
+
+        .btn-glass:hover {
+            background: var(--glass-hover);
+            border-color: var(--teal);
+            color: var(--teal);
+            text-decoration: none;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px var(--teal-glow);
+        }
+
+        .btn-teal {
+            background: linear-gradient(135deg, #00c9b1, #0078b4);
+            border: none;
+            color: white;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 15px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .btn-teal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px var(--teal-glow);
+            color: white;
+        }
+
+        /* LAYOUT */
+        .main-content { padding: 40px 32px; max-width: 1100px; margin: 0 auto; }
+
+        .glass-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            backdrop-filter: blur(20px);
+            padding: 28px;
+            margin-bottom: 24px;
+            transition: border-color 0.3s ease;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .glass-card:hover { border-color: rgba(0, 201, 177, 0.3); }
+        .glass-card:nth-child(1) { animation-delay: 0.05s; }
+        .glass-card:nth-child(2) { animation-delay: 0.1s; }
+        .glass-card:nth-child(3) { animation-delay: 0.15s; }
+        .glass-card:nth-child(4) { animation-delay: 0.2s; }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* FOOD SELECTOR */
+        .food-selector { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+        .food-selector label {
+            font-weight: 600;
+            color: var(--teal);
+            font-size: 15px;
+            white-space: nowrap;
+            margin: 0;
+        }
+
+        .food-select {
+            flex: 1;
+            min-width: 200px;
+            background: rgba(10, 22, 40, 0.7);
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            padding: 10px 16px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.25s;
+        }
+
+        .food-select:focus { border-color: var(--teal); }
+        .food-select option { background: var(--ocean-mid); color: var(--text-primary); }
+
+        /* CALORIE GOAL */
+        .goal-label {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .goal-numbers {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--teal);
+            margin-bottom: 16px;
+        }
+
+        .progress-track {
+            background: rgba(255,255,255,0.08);
+            border-radius: 50px;
+            height: 12px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 50px;
+            background: linear-gradient(90deg, #00c9b1, #0078b4);
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 12px var(--teal-glow);
+            width: 0%;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--teal);
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* TABLE */
+        .food-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 5px;
+        }
+
+        .food-table thead th {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border: none;
+            background: transparent;
+            text-align: center;
+        }
+
+        .food-table tbody tr {
+            background: rgba(255,255,255,0.04);
+            transition: background 0.2s ease;
+        }
+
+        .food-table tbody tr:hover { background: rgba(255,255,255,0.08); }
+
+        .food-table tbody td {
+            padding: 13px 16px;
+            text-align: center;
+            border: none;
+            color: var(--text-primary);
+            font-size: 14px;
+        }
+
+        .food-table tbody tr td:first-child {
+            border-radius: 10px 0 0 10px;
+            font-weight: 600;
+            text-align: left;
+        }
+
+        .food-table tbody tr td:last-child { border-radius: 0 10px 10px 0; }
+
+        /* TOTALS ROW */
+        .food-table tfoot td {
+            background: rgba(0, 201, 177, 0.08);
+            border-top: 1px solid rgba(0, 201, 177, 0.3);
+            color: var(--teal);
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            padding: 14px 16px;
+            text-align: center;
+        }
+
+        .food-table tfoot tr td:first-child { border-radius: 10px 0 0 10px; text-align: left; }
+        .food-table tfoot tr td:last-child  { border-radius: 0 10px 10px 0; }
+
+        /* BUTTONS */
+        .btn-delete {
+            background: rgba(255, 107, 138, 0.12);
+            border: 1px solid rgba(255, 107, 138, 0.3);
+            color: var(--danger);
+            border-radius: 8px;
+            padding: 5px 14px;
+            font-size: 13px;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .btn-delete:hover {
+            background: rgba(255, 107, 138, 0.25);
+            color: var(--danger);
+            text-decoration: none;
+            transform: scale(1.05);
+        }
+
+        .save-btn-wrap { text-align: center; padding: 24px 0 4px; }
+
+        .btn-save {
+            background: linear-gradient(135deg, #00c9b1 0%, #0078b4 100%);
+            border: none;
+            color: white;
+            border-radius: 14px;
+            padding: 14px 52px;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 700;
+            font-size: 16px;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 24px rgba(0, 201, 177, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 32px rgba(0, 201, 177, 0.5);
+        }
+
+        /* CHART */
+        .chart-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--teal);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        /* EMPTY STATE */
+        .empty-row td {
+            text-align: center;
+            padding: 40px !important;
+            color: var(--text-muted) !important;
+            font-size: 15px !important;
+            background: transparent !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar-custom">
+        <span class="navbar-brand-text">🌊 Calorie Tracker</span>
+        <div class="nav-links">
+            <a href="{% url 'bmi' %}" class="btn-glass">⚖️ BMI</a>
+            <a href="{% url 'history' %}" class="btn-glass">📅 History</a>
+            <a href="{% url 'index_page' %}" class="btn-glass">🏠 Home</a>
+        </div>
+    </nav>
+
+    <div class="main-content">
+
+        <!-- ADD FOOD -->
+        <div class="glass-card">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="food-selector">
+                    <label>🍽️ Add Food</label>
+                    <select class="food-select" name="food_consumed" id="food_consumed">
+                        {% for food in foods %}
+                        <option value="{{ food.name }}">{{ food.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn-teal" type="submit">+ Add</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- CALORIE GOAL -->
+        <div class="glass-card">
+            <div class="goal-label">Daily Calorie Goal</div>
+            <div class="goal-numbers" id="calorieGoalText">— / — Kcal</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
+
+        <!-- TABLE + SAVE FORM -->
+        <form method="POST" action="{% url 'save_day' %}" id="saveDayForm">
+            {% csrf_token %}
+            <input type="hidden" name="total_carbs" id="hiddenCarbs">
+            <input type="hidden" name="total_protein" id="hiddenProtein">
+            <input type="hidden" name="total_fats" id="hiddenFats">
+            <input type="hidden" name="total_calories" id="hiddenCalories">
+
+            <div class="glass-card">
+                <div class="section-title">📋 Today's Consumption</div>
+
+                <table class="food-table" id="table">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left">Food Item</th>
+                            <th>Carbs (gm)</th>
+                            <th>Protein (gm)</th>
+                            <th>Fats (gm)</th>
+                            <th>Calories (Kcal)</th>
+                            <th>Remove</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for c in consumed_food %}
+                        <tr>
+                            <td>{{ c.food_consumed.name }}</td>
+                            <td>{{ c.food_consumed.carbs }}</td>
+                            <td>{{ c.food_consumed.protein }}</td>
+                            <td>{{ c.food_consumed.fats }}</td>
+                            <td>{{ c.food_consumed.calories }}</td>
+                            <td>
+                                <a class="btn-delete" href="{% url 'delete' c.pk %}"
+                                    onclick="return confirm('Remove this item?')">✕</a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr class="empty-row">
+                            <td colspan="6">No food added yet. Start tracking! 🥗</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><b>TOTAL</b></td>
+                            <td id="totalCarbs">—</td>
+                            <td id="totalProtien">—</td>
+                            <td id="totalFats">—</td>
+                            <td id="totalCalories">—</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div class="save-btn-wrap">
+                    <button type="submit" class="btn-save"
+                        onclick="return confirm('Save today and clear the list?')">
+                        💾 Save Day
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- CHART -->
+        <div class="glass-card">
+            <div class="chart-title">Nutrients Breakdown</div>
+            <div style="max-width: 340px; margin: 0 auto;">
+                <canvas id="myChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        var calorieGoal = {{ calorie_goal }};
+    </script>
+    <script>
+        var table = document.getElementById("table");
+        var carbs = 0, protein = 0, fats = 0, calories = 0;
+        var rows = table.tBodies[0].rows;
+
+        for (var i = 0; i < rows.length; i++) {
+            if (rows[i].cells.length < 5) continue;
+            carbs    += parseFloat(rows[i].cells[1].innerHTML) || 0;
+            protein  += parseFloat(rows[i].cells[2].innerHTML) || 0;
+            fats     += parseFloat(rows[i].cells[3].innerHTML) || 0;
+            calories += parseFloat(rows[i].cells[4].innerHTML) || 0;
+        }
+
+        carbs    = Math.round(carbs);
+        protein  = Math.round(protein);
+        fats     = Math.round(fats);
+        calories = Math.round(calories);
+
+        document.getElementById("totalCarbs").innerHTML    = carbs    + ' gm';
+        document.getElementById("totalProtien").innerHTML  = protein  + ' gm';
+        document.getElementById("totalFats").innerHTML     = fats     + ' gm';
+        document.getElementById("totalCalories").innerHTML = calories + ' Kcal';
+
+        // progress bar
+        var calPer = Math.min((calories / calorieGoal) * 100, 100);
+        document.getElementById('calorieGoalText').innerHTML = calories + ' / ' + calorieGoal + ' Kcal';
+
+        // color changes based on how full
+        var fill = document.getElementById('progressFill');
+        fill.style.width = calPer + '%';
+        if (calPer >= 100) {
+            fill.style.background = 'linear-gradient(90deg, #ff6b8a, #ff4757)';
+            fill.style.boxShadow  = '0 0 12px rgba(255,107,138,0.5)';
+        } else if (calPer >= 80) {
+            fill.style.background = 'linear-gradient(90deg, #ffc107, #ff8c00)';
+            fill.style.boxShadow  = '0 0 12px rgba(255,193,7,0.4)';
+        }
+
+        // hidden inputs
+        document.getElementById('hiddenCarbs').value    = carbs;
+        document.getElementById('hiddenProtein').value  = protein;
+        document.getElementById('hiddenFats').value     = fats;
+        document.getElementById('hiddenCalories').value = calories;
+
+        // chart
+        var total    = carbs + protein + fats;
+        var carbsP   = total > 0 ? Math.round((carbs   / total) * 100) : 33;
+        var proteinP = total > 0 ? Math.round((protein / total) * 100) : 33;
+        var fatsP    = total > 0 ? Math.round((fats    / total) * 100) : 34;
+
+        new Chart(document.getElementById('myChart').getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Carbs ' + carbsP + '%', 'Protein ' + proteinP + '%', 'Fats ' + fatsP + '%'],
+                datasets: [{
+                    data: [carbsP, proteinP, fatsP],
+                    backgroundColor: ['rgba(255,107,138,0.85)', 'rgba(0,201,177,0.85)', 'rgba(0,120,180,0.85)'],
+                    borderColor:     ['#ff6b8a', '#00c9b1', '#0078b4'],
+                    borderWidth: 2,
+                    hoverOffset: 8
+                }]
+            },
+            options: {
+                cutoutPercentage: 65,
+                legend: {
+                    labels: {
+                        fontColor: 'rgba(232,244,253,0.8)',
+                        fontFamily: 'Outfit',
+                        fontSize: 14,
+                        padding: 20
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
